@@ -6,38 +6,45 @@ from googletrans import Translator
 from streamlit_lottie import st_lottie
 import json
 
-# ---------------- CONFIGURACIÓN ----------------
+# =========================================
+# CONFIGURACIÓN DE LA PÁGINA
+# =========================================
 
 st.set_page_config(
-    page_title="Analizador de Texto Simple",
+    page_title="Analizador de Texto",
     page_icon="📊",
     layout="wide"
 )
 
-# ---------------- FUNCIONES LOTTIE ----------------
+# =========================================
+# CARGAR ANIMACIONES
+# =========================================
 
 def cargar_lottie(filepath):
-    with open(filepath, "r") as f:
+    with open(filepath, "r", encoding="utf-8") as f:
         return json.load(f)
 
-# ANIMACIONES
-animacion_positiva = cargar_lottie("positivo.json")
-animacion_negativa = cargar_lottie("negativo.json")
+animacion_positiva = cargar_lottie("feliz.json")
+animacion_negativa = cargar_lottie("triste.json")
 animacion_neutral = cargar_lottie("neutral.json")
 
-# ---------------- TÍTULO ----------------
+# =========================================
+# TÍTULO
+# =========================================
 
 st.title("📝 Analizador de Texto con TextBlob")
 
 st.markdown("""
 Esta aplicación utiliza TextBlob para realizar un análisis básico de texto:
 
-- Análisis de sentimiento y subjetividad  
-- Extracción de palabras clave  
-- Análisis de frecuencia de palabras  
+- Análisis de sentimiento y subjetividad
+- Extracción de palabras clave
+- Análisis de frecuencia de palabras
 """)
 
-# ---------------- SIDEBAR ----------------
+# =========================================
+# SIDEBAR
+# =========================================
 
 st.sidebar.title("Opciones")
 
@@ -46,34 +53,29 @@ modo = st.sidebar.selectbox(
     ["Texto directo", "Archivo de texto"]
 )
 
-# ---------------- CONTADOR DE PALABRAS ----------------
+# =========================================
+# CONTADOR DE PALABRAS
+# =========================================
 
 def contar_palabras(texto):
 
     stop_words = set([
         "a","al","algo","algunas","algunos","ante","antes","como","con",
         "contra","cual","cuando","de","del","desde","donde","durante",
-        "e","el","ella","ellas","ellos","en","entre","era","eras","es",
-        "esa","esas","ese","eso","esos","esta","estas","este","esto",
-        "estos","ha","han","hasta","he","la","las","le","les","lo",
-        "los","me","mi","mis","mucho","muy","nada","ni","no","nos",
-        "o","otra","otro","para","pero","por","porque","que","se","si",
-        "sin","sobre","su","sus","también","te","ti","tiene","todo",
-        "tu","tus","un","una","uno","unos","y","ya","yo",
+        "e","el","ella","ellas","ellos","en","entre","era","es","esa",
+        "esas","ese","eso","esos","esta","estas","este","esto","estos",
+        "ha","han","hasta","he","la","las","le","les","lo","los","me",
+        "mi","mis","mucho","muy","nada","ni","no","nos","o","otra",
+        "otro","para","pero","poco","por","porque","que","quien","se",
+        "si","sin","sobre","somos","son","soy","su","sus","también",
+        "te","ti","tiene","todo","tu","tus","un","una","uno","unos",
+        "y","ya","yo",
 
-        "about","above","after","again","against","all","am","an","and",
-        "any","are","as","at","be","because","been","before","being",
-        "below","between","both","but","by","could","did","do","does",
-        "doing","down","during","each","few","for","from","further",
-        "had","has","have","having","he","her","here","hers","him",
-        "his","how","if","in","into","is","it","its","itself","just",
-        "more","most","my","no","nor","not","now","of","off","on",
-        "once","only","or","other","our","out","over","own","same",
-        "she","should","so","some","such","than","that","the","their",
-        "them","then","there","these","they","this","those","through",
-        "to","too","under","until","up","very","was","we","were",
-        "what","when","where","which","while","who","why","with",
-        "would","you","your"
+        # Inglés
+        "the","and","for","that","with","you","your","are","was","were",
+        "this","have","from","they","their","would","there","what","when",
+        "where","which","while","about","after","before","because","been",
+        "being","into","through","during","above","below","between"
     ])
 
     palabras = re.findall(r'\b\w+\b', texto.lower())
@@ -92,16 +94,17 @@ def contar_palabras(texto):
         sorted(contador.items(), key=lambda x: x[1], reverse=True)
     )
 
-    return contador_ordenado, palabras_filtradas
+    return contador_ordenado
 
-# ---------------- TRADUCTOR ----------------
+# =========================================
+# TRADUCTOR
+# =========================================
 
 translator = Translator()
 
 def traducir_texto(texto):
 
     try:
-
         traduccion = translator.translate(
             texto,
             src='es',
@@ -115,7 +118,9 @@ def traducir_texto(texto):
         st.error(f"Error al traducir: {e}")
         return texto
 
-# ---------------- PROCESAMIENTO ----------------
+# =========================================
+# PROCESAMIENTO
+# =========================================
 
 def procesar_texto(texto):
 
@@ -142,32 +147,38 @@ def procesar_texto(texto):
 
     frases_combinadas = []
 
-    for i in range(min(len(frases_originales), len(frases_traducidas))):
+    for i in range(
+        min(len(frases_originales), len(frases_traducidas))
+    ):
 
         frases_combinadas.append({
             "original": frases_originales[i],
             "traducido": frases_traducidas[i]
         })
 
-    contador_palabras, palabras = contar_palabras(texto_ingles)
+    contador_palabras = contar_palabras(texto_ingles)
 
     return {
         "sentimiento": sentimiento,
         "subjetividad": subjetividad,
         "frases": frases_combinadas,
         "contador_palabras": contador_palabras,
-        "palabras": palabras,
         "texto_original": texto_original,
         "texto_traducido": texto_ingles
     }
 
-# ---------------- VISUALIZACIONES ----------------
+# =========================================
+# VISUALIZACIONES
+# =========================================
 
 def crear_visualizaciones(resultados):
 
     col1, col2 = st.columns(2)
 
-    # SENTIMIENTO
+    # =====================================
+    # COLUMNA IZQUIERDA
+    # =====================================
+
     with col1:
 
         st.subheader("Análisis de Sentimiento y Subjetividad")
@@ -180,27 +191,50 @@ def crear_visualizaciones(resultados):
 
         st.progress(sentimiento_norm)
 
+        # POSITIVO
         if resultados["sentimiento"] > 0.05:
 
             st.success(
                 f"📈 Positivo ({resultados['sentimiento']:.2f})"
             )
 
+            st_lottie(
+                animacion_positiva,
+                height=180,
+                key="positivo"
+            )
+
+        # NEGATIVO
         elif resultados["sentimiento"] < -0.05:
 
             st.error(
                 f"📉 Negativo ({resultados['sentimiento']:.2f})"
             )
 
+            st_lottie(
+                animacion_negativa,
+                height=180,
+                key="negativo"
+            )
+
+        # NEUTRAL
         else:
 
             st.info(
                 f"📊 Neutral ({resultados['sentimiento']:.2f})"
             )
 
+            st_lottie(
+                animacion_neutral,
+                height=180,
+                key="neutral"
+            )
+
         st.write("**Subjetividad:**")
 
-        st.progress(resultados["subjetividad"])
+        st.progress(
+            resultados["subjetividad"]
+        )
 
         if resultados["subjetividad"] > 0.5:
 
@@ -214,7 +248,10 @@ def crear_visualizaciones(resultados):
                 f"📋 Baja subjetividad ({resultados['subjetividad']:.2f})"
             )
 
-    # PALABRAS FRECUENTES
+    # =====================================
+    # COLUMNA DERECHA
+    # =====================================
+
     with col2:
 
         st.subheader("Palabras más frecuentes")
@@ -229,36 +266,9 @@ def crear_visualizaciones(resultados):
 
             st.bar_chart(palabras_top)
 
-    # ---------------- ANIMACIÓN ----------------
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    col_a, col_b, col_c = st.columns([1,2,1])
-
-    with col_b:
-
-        if resultados["sentimiento"] > 0.05:
-
-            st_lottie(
-                animacion_positiva,
-                height=250
-            )
-
-        elif resultados["sentimiento"] < -0.05:
-
-            st_lottie(
-                animacion_negativa,
-                height=250
-            )
-
-        else:
-
-            st_lottie(
-                animacion_neutral,
-                height=250
-            )
-
-    # ---------------- TEXTO TRADUCIDO ----------------
+    # =====================================
+    # TEXTO TRADUCIDO
+    # =====================================
 
     st.subheader("Texto Traducido")
 
@@ -268,7 +278,9 @@ def crear_visualizaciones(resultados):
 
         with col1:
 
-            st.markdown("**Texto Original (Español):**")
+            st.markdown(
+                "**Texto Original (Español):**"
+            )
 
             st.text(
                 resultados["texto_original"]
@@ -276,72 +288,67 @@ def crear_visualizaciones(resultados):
 
         with col2:
 
-            st.markdown("**Texto Traducido (Inglés):**")
+            st.markdown(
+                "**Texto Traducido (Inglés):**"
+            )
 
             st.text(
                 resultados["texto_traducido"]
             )
 
-    # ---------------- FRASES ----------------
+    # =====================================
+    # FRASES DETECTADAS
+    # =====================================
 
     st.subheader("Frases detectadas")
 
     if resultados["frases"]:
 
         for i, frase_dict in enumerate(
-            resultados["frases"][:10],
-            1
+            resultados["frases"][:10], 1
         ):
 
             frase_original = frase_dict["original"]
             frase_traducida = frase_dict["traducido"]
 
-            try:
+            blob_frase = TextBlob(frase_traducida)
 
-                blob_frase = TextBlob(
-                    frase_traducida
-                )
+            sentimiento = blob_frase.sentiment.polarity
 
-                sentimiento = (
-                    blob_frase.sentiment.polarity
-                )
+            if sentimiento > 0.05:
+                emoji = "😊"
 
-                if sentimiento > 0.05:
-                    emoji = "😊"
+            elif sentimiento < -0.05:
+                emoji = "😟"
 
-                elif sentimiento < -0.05:
-                    emoji = "😟"
+            else:
+                emoji = "😐"
 
-                else:
-                    emoji = "😐"
+            st.write(
+                f"{i}. {emoji} **Original:** *\"{frase_original}\"*"
+            )
 
-                st.write(
-                    f"{i}. {emoji} **Original:** *\"{frase_original}\"*"
-                )
+            st.write(
+                f"   **Traducción:** *\"{frase_traducida}\"*"
+            )
 
-                st.write(
-                    f"   **Traducción:** *\"{frase_traducida}\"*"
-                )
+            st.write("---")
 
-                st.write("---")
+    else:
 
-            except:
+        st.write(
+            "No se detectaron frases."
+        )
 
-                st.write(
-                    f"{i}. **Original:** *\"{frase_original}\"*"
-                )
-
-                st.write(
-                    f"   **Traducción:** *\"{frase_traducida}\"*"
-                )
-
-                st.write("---")
-
-# ---------------- MODOS ----------------
+# =========================================
+# MODO TEXTO DIRECTO
+# =========================================
 
 if modo == "Texto directo":
 
-    st.subheader("Ingresa tu texto para analizar")
+    st.subheader(
+        "Ingresa tu texto para analizar"
+    )
 
     texto = st.text_area(
         "",
@@ -364,14 +371,18 @@ if modo == "Texto directo":
         else:
 
             st.warning(
-                "Por favor ingresa texto."
+                "Por favor ingresa un texto."
             )
 
-# ---------------- ARCHIVOS ----------------
+# =========================================
+# MODO ARCHIVO
+# =========================================
 
 elif modo == "Archivo de texto":
 
-    st.subheader("Carga un archivo de texto")
+    st.subheader(
+        "Carga un archivo de texto"
+    )
 
     archivo = st.file_uploader(
         "",
@@ -382,33 +393,45 @@ elif modo == "Archivo de texto":
 
         try:
 
-            contenido = archivo.getvalue().decode("utf-8")
+            contenido = archivo.getvalue().decode(
+                "utf-8"
+            )
 
             with st.expander(
                 "Ver contenido del archivo"
             ):
 
-                st.text(contenido[:1000])
+                st.text(
+                    contenido[:1000]
+                )
 
-            if st.button("Analizar archivo"):
+            if st.button(
+                "Analizar archivo"
+            ):
 
                 with st.spinner(
                     "Analizando archivo..."
                 ):
 
-                    resultados = procesar_texto(contenido)
+                    resultados = procesar_texto(
+                        contenido
+                    )
 
-                    crear_visualizaciones(resultados)
+                    crear_visualizaciones(
+                        resultados
+                    )
 
         except Exception as e:
 
-            st.error(f"Error: {e}")
+            st.error(
+                f"Error al procesar archivo: {e}"
+            )
 
-# ---------------- INFO ----------------
+# =========================================
+# INFORMACIÓN
+# =========================================
 
-with st.expander(
-    "📚 Información sobre el análisis"
-):
+with st.expander("📚 Información sobre el análisis"):
 
     st.markdown("""
 ### Sobre el análisis de texto
