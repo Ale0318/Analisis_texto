@@ -24,8 +24,8 @@ def cargar_lottie(filepath):
     with open(filepath, "r", encoding="utf-8") as f:
         return json.load(f)
 
-animacion_positiva = cargar_lottie("feliz.json")
-animacion_negativa = cargar_lottie("triste.json")
+animacion_positiva = cargar_lottie("positivo.json")
+animacion_negativa = cargar_lottie("negativo.json")
 animacion_neutral = cargar_lottie("neutral.json")
 
 # =========================================
@@ -54,7 +54,7 @@ modo = st.sidebar.selectbox(
 )
 
 # =========================================
-# CONTADOR DE PALABRAS
+# FUNCIÓN CONTAR PALABRAS
 # =========================================
 
 def contar_palabras(texto):
